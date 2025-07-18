@@ -1,2 +1,161 @@
 <p> Hello 大家好，我是Jimmy</p>
 <p> 很高兴你来到这个空间,欢迎留言讨论</p>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jimmy的个人空间</title>
+    <style>
+        /* 留言板样式 - 现代卡片式设计 */
+        .message-board {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        #messages {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            padding-right: 10px;
+        }
+        .message-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .username {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .timestamp {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+        .message-content {
+            line-height: 1.5;
+            color: #4a5568;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 12px;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #3182ce;
+        }
+    </style>
+</head>
+<body>
+    <!-- 用户已有的欢迎语 -->
+    <p>Hello 大家好，我是Jimmy</p>
+    <p>很高兴你来到这个空间，欢迎留言讨论</p>
+
+    <!-- 新增留言板 -->
+    <div class="message-board">
+        <h2>访客留言区</h2>
+        <div id="messages"></div>
+        
+        <form id="messageForm">
+            <textarea 
+                id="userMessage" 
+                placeholder="写下您的留言（支持Markdown语法）"
+                required
+            ></textarea>
+            <button type="submit">发布留言</button>
+        </form>
+    </div>
+
+    <script>
+        // 初始化留言板
+        document.addEventListener('DOMContentLoaded', () => {
+            const messageForm = document.getElementById('messageForm');
+            const messagesContainer = document.getElementById('messages');
+            
+            // 加载历史留言
+            loadMessages();
+
+            // 提交新留言
+            messageForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const content = document.getElementById('userMessage').value.trim();
+                
+                if (!content) {
+                    alert('留言内容不能为空');
+                    return;
+                }
+                
+                createMessageCard({
+                    username: '访客',
+                    content: content,
+                    time: new Date().toLocaleString('zh-CN')
+                });
+                
+                saveMessage(content);
+                messageForm.reset();
+            });
+            
+            // 创建留言卡片
+            function createMessageCard(msg) {
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                card.innerHTML = `
+                    <div class="message-header">
+                        <span class="username">${msg.username}</span>
+                        <span class="timestamp">${msg.time}</span>
+                    </div>
+                    <div class="message-content">${msg.content.replace(/\n/g, '<br>')}</div>
+                `;
+                messagesContainer.prepend(card);  // 新留言置顶
+            }
+            
+            // 保存到本地存储
+            function saveMessage(content) {
+                const messages = JSON.parse(localStorage.getItem('guestMessages') || '[]');
+                messages.push({
+                    username: '访客',
+                    content: content,
+                    time: new Date().toLocaleString('zh-CN')
+                });
+                localStorage.setItem('guestMessages', JSON.stringify(messages));
+            }
+            
+            // 加载历史留言
+            function loadMessages() {
+                const messages = JSON.parse(localStorage.getItem('guestMessages') || '[]');
+                messages.forEach(createMessageCard);
+            }
+        });
+    </script>
+</body>
+</html>
