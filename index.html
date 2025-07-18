@@ -1,3 +1,279 @@
-<p> Hello 大家好，我是Jimmy</p>
-<p> 很高兴你来到这个空间,欢迎留言讨论</p>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jimmy的个人空间</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        /* 留言板样式 */
+        .message-board {
+            margin-top: 40px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+            background-color: #fff;
+        }
+        
+        .message-list {
+            max-height: 450px;
+            overflow-y: auto;
+            margin-bottom: 25px;
+            padding-right: 15px;
+        }
+        
+        .message {
+            background-color: #f1f8ff;
+            border-left: 4px solid #3498db;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        .message:hover {
+            transform: translateX(5px);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .username {
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        .timestamp {
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+        
+        .message-content {
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .delete-btn {
+            background-color: transparent;
+            color: #e74c3c;
+            border: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jimmy的个人空间</h1>
+        
+        <div class="welcome-section">
+            <p>Hello 大家好，我是Jimmy</p>
+            <p>很高兴你来到这个空间，欢迎留言讨论</p>
+        </div>
+        
+        <div class="message-board">
+            <h2>访客留言区</h2>
+            
+            <div class="message-list" id="messageList">
+                <!-- 留言将在这里动态显示 -->
+            </div>
+            
+            <div class="message-form">
+                <textarea id="userMessage" placeholder="写下您的留言...（支持多行输入）"></textarea>
+                
+                <div class="btn-container">
+                    <button id="submitBtn">发布留言</button>
+                    <button id="clearLocalBtn" style="background-color: #7f8c8d;">清除所有留言</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 Jimmy的个人空间 | 所有留言存储在您的浏览器中</p>
+        </footer>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const messageList = document.getElementById('messageList');
+            const userMessage = document.getElementById('userMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            const clearLocalBtn = document.getElementById('clearLocalBtn');
+            
+            // 从localStorage加载已有留言
+            function loadMessages() {
+                const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+                messageList.innerHTML = '';
+                
+                if (messages.length === 0) {
+                    messageList.innerHTML = '<p style="text-align:center;color:#7f8c8d;">暂无留言，成为第一个留言的人吧！</p>';
+                    return;
+                }
+                
+                // 按时间倒序排列（最新留言在最上面）
+                messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                messages.forEach((msg, index) => {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message';
+                    messageElement.innerHTML = `
+                        <div class="message-header">
+                            <span class="username">访客${index + 1}</span>
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>
+                        <div class="message-content">${msg.text}</div>
+                        <button class="delete-btn" data-index="${index}">×</button>
+                    `;
+                    messageList.appendChild(messageElement);
+                });
+                
+                // 添加删除按钮事件
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        deleteMessage(index);
+                    });
+                });
+            }
+            
+            // 添加新留言
+            function addMessage() {
+                const text = userMessage.value.trim();
+                
+                if (!text) {
+                    alert('请输入留言内容');
+                    return;
+                }
+                
+                const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                
+                messages.push({ text, timestamp });
+                localStorage.setItem('messages', JSON.stringify(messages));
+                
+                userMessage.value = '';
+                loadMessages();
+            }
+            
+            // 删除留言
+            function deleteMessage(index) {
+                const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+                messages.splice(index, 1);
+                localStorage.setItem('messages', JSON.stringify(messages));
+                loadMessages();
+            }
+            
+            // 清除所有留言
+            function clearAllMessages() {
+                if (confirm('确定要删除所有留言吗？此操作不可恢复！')) {
+                    localStorage.removeItem('messages');
+                    loadMessages();
+                }
+            }
+            
+            // 事件监听
+            submitBtn.addEventListener('click', addMessage);
+            clearLocalBtn.addEventListener('click', clearAllMessages);
+            
+            // 支持按Enter换行，Ctrl+Enter提交
+            userMessage.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    addMessage();
+                } else if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // 避免默认回车行为
+                    if (!e.ctrlKey) {
+                        addMessage();
+                    }
+                }
+            });
+            
+            // 初始加载留言
+            loadMessages();
+        });
+    </script>
+</body>
+</html>
